@@ -1,19 +1,13 @@
-// @TODO: YOUR CODE HERE!
-
-// data
-// var dataArray = [1, 2, 3];
-// var dataCategories = ["one", "two", "three"];
-
 // svg container
 var svgHeight = 400;
 var svgWidth = 600;
 
 // margins
 var margin = {
-  top: 50,
-  right: 50,
-  bottom: 50,
-  left: 50
+    top: 50,
+    right: 50,
+    bottom: 50,
+    left: 50
 };
 
 // chart area minus margins
@@ -22,35 +16,32 @@ var chartWidth = svgWidth - margin.left - margin.right;
 
 // create svg container
 var svg = d3.select("#svg-area").append("svg")
-  .attr("height", svgHeight)
-  .attr("width", svgWidth);
+    .attr("height", svgHeight)
+    .attr("width", svgWidth);
 
 // shift everything over by the margins
 var chartGroup = svg.append("g")
-  .attr("transform", `translate(${margin.left}, ${margin.top})`);
+    .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
 // Import Data
-d3.csv("assets/data/data.csv").then(function(publicHealthData) {
+d3.csv("assets/data/data.csv").then(function (publicHealthData) {
 
-    // Print the milesData
-    console.log(publicHealthData);
-    
-    // Step 1: Parse Data/Cast as numbers
+    // Step 1: Cast some variables as numbers
     // ==============================
-    publicHealthData.forEach(function(data) {
-      data.age = +data.age;
-      data.income = +data.income;
+    publicHealthData.forEach(function (data) {
+        data.poverty = +data.poverty;
+        data.healthcare = +data.healthcare;
     });
 
     // Step 2: Create scale functions
     // ==============================
     var xLinearScale = d3.scaleLinear()
-      .domain([20, d3.max(publicHealthData, d => d.age)])
-      .range([0, chartWidth]);
+        .domain([d3.min(publicHealthData, d => d.poverty) - 1, d3.max(publicHealthData, d => d.poverty) + 2])
+        .range([0, chartWidth]);
 
     var yLinearScale = d3.scaleLinear()
-      .domain([0, d3.max(publicHealthData, d => d.income)])
-      .range([chartHeight, 0]);
+        .domain([0, d3.max(publicHealthData, d => d.healthcare) + 2])
+        .range([chartHeight, 0]);
 
     // Step 3: Create axis functions
     // ==============================
@@ -60,23 +51,38 @@ d3.csv("assets/data/data.csv").then(function(publicHealthData) {
     // Step 4: Append Axes to the chart
     // ==============================
     chartGroup.append("g")
-      .attr("transform", `translate(0, ${chartHeight})`)
-      .call(bottomAxis);
+        .attr("transform", `translate(0, ${chartHeight})`)
+        .call(bottomAxis);
 
     chartGroup.append("g")
-      .call(leftAxis);
+        .call(leftAxis);
 
     // Step 5: Create Circles
     // ==============================
+    let radius = 10
+
     var circlesGroup = chartGroup.selectAll("circle")
-    .data(publicHealthData)
-    .enter()
-    .append("circle")
-    .attr("cx", d => xLinearScale(d.age))
-    .attr("cy", d => yLinearScale(d.income))
-    .attr("r", "15")
-    .attr("fill", "pink")
-    .attr("opacity", ".5");
+        .data(publicHealthData)
+        .enter()
+        .append("circle")
+        .attr("cx", d => xLinearScale(d.poverty))
+        .attr("cy", d => yLinearScale(d.healthcare))
+        .attr("r", `${radius}`)
+        .attr("fill", "#89bdd3")
+        .attr("opacity", ".4");
+
+
+    var initialsGroup = chartGroup.selectAll("aText")
+        .data(publicHealthData)
+        .enter()
+        .append("text")
+        .attr("dx", d => xLinearScale(d.poverty))
+        .attr("dy", d => yLinearScale(d.healthcare)+3)
+        .attr("style", "color:white")
+        .attr("text-anchor", "middle")
+        .attr("font-size", `${radius}px`)
+        .text(d => d.abbr);
+
 
     // Step 6: Initialize tool tip
     // ==============================
@@ -96,24 +102,24 @@ d3.csv("assets/data/data.csv").then(function(publicHealthData) {
     // circlesGroup.on("click", function(data) {
     //   toolTip.show(data, this);
     // })
-      // onmouseout event
+    // onmouseout event
     //   .on("mouseout", function(data, index) {
     //     toolTip.hide(data);
     //   });
 
     // Create axes labels
-//     chartGroup.append("text")
-//       .attr("transform", "rotate(-90)")
-//       .attr("y", 0 - margin.left + 40)
-//       .attr("x", 0 - (height / 2))
-//       .attr("dy", "1em")
-//       .attr("class", "axisText")
-//       .text("Number of Billboard 100 Hits");
+    chartGroup.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 0 - margin.left)
+        .attr("x", 0 - (chartHeight / 2))
+        .attr("dy", "1em")
+        .attr("class", "axisText")
+        .text("% With Healthcare");
 
-//     chartGroup.append("text")
-//       .attr("transform", `translate(${width / 2}, ${height + margin.top + 30})`)
-//       .attr("class", "axisText")
-//       .text("Hair Metal Band Hair Length (inches)");
-//   }).catch(function(error) {
-//     console.log(error);
-  });
+    chartGroup.append("text")
+        .attr("transform", `translate(${chartWidth / 2}, ${chartHeight + margin.top - 1})`)
+        .attr("class", "axisText")
+        .text("% In Poverty");
+}).catch(function (error) {
+    console.log(error);
+});
