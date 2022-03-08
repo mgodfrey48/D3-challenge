@@ -1,4 +1,4 @@
-# D3-challenge
+# Heatlth Trends Visualization
 In this project I create an interactive visualization for users to see trends between various health risk factors. The visualization produced would theoretically be presented on a newspaper's website.
 
 ## Directories and Files
